@@ -5,7 +5,6 @@ const profileSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
-  //  unique: true, 
   },
 
   firstName: String,
@@ -25,6 +24,7 @@ const profileSchema = new mongoose.Schema({
   cityId: { type: mongoose.Schema.ObjectId, ref: "Cities" },
   educationId: { type: mongoose.Schema.ObjectId, ref: "EducationLevels" },
   professionId: { type: mongoose.Schema.ObjectId, ref: "Professions" },
+  profileImageUrl: { type: String },
   isVerified: { type: Boolean, default: false },
 });
 const Profile = mongoose.model("Profile", profileSchema);

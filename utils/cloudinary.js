@@ -1,23 +1,24 @@
 require("dotenv").config();
 
-const cloudinary = require("cloudinary");
+const cloudinary = require("cloudinary").v2;
 
- // Configuration
-    cloudinary.config({ 
-        cloud_name:process.env.CLOUDINARY_NAME, 
-        api_key: process.env.CLOUDINARY_API, 
-        api_secret:process.env.CLOUDINARY_SECRETKEY, // Click 'View API Keys' above to copy your API secret
-    });
+// Configuration
+cloudinary.config({ 
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+    api_key: process.env.CLOUDINARY_API_KEY, 
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
-    const uploadToCloud = async(imagePath)=>{
-        try {
-            const upload = await cloudinary.uploader.upload(imagePath,{
-                folder:"wedding"
-            });
-
-            return upload;
-        } catch (error) {
-            console.error(error)
-        }
+const uploadToCloud = async (imagePath) => {
+    try {
+        const upload = await cloudinary.uploader.upload(imagePath, {
+            folder: "wedding"
+        });
+        return upload;
+    } catch (error) {
+        console.error("Cloudinary Upload Error:", error.message);
+        throw error;
     }
-    module.exports = {uploadToCloud}
+};
+
+module.exports = { uploadToCloud };

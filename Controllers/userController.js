@@ -7,7 +7,6 @@ const { transporter } = require("../utils/nodemailer");
 require("dotenv").config();
 const cloudinary = require("cloudinary");
 const { uploadToCloud } = require("../utils/cloudinary");
-const { use } = require("react");
 
 const registerHandler = async (req, res) => {
   try {
@@ -93,7 +92,7 @@ const loginHandler = async (req, res) => {
           `Welcom Admin ${user.username} You can Register Your Company`
         );
       } else {
-        return messageHandler(res, 200, "User Found", user);
+        return messageHandler(res, 200, "Logged In Successfully", user);
       }
     } else {
       return messageHandler(res, 400, "Incorrect Password");
@@ -208,17 +207,13 @@ const getUserbyId = async (req, res) => {
     if (!userId) {
       return messageHandler(res, 404, "User Id Not Found");
     }
-    const user = await User.find();
+    const user = await User.findById(userId).select('-password');
 
-    if (user.role === "super admin") {
-      return messageHandler(res, 200, "User Found", user);
-    } else {
-      return messageHandler(
-        res,
-        400,
-        "You are Enable to Check this || UnAutherised"
-      );
+    if (!user) {
+      return messageHandler(res, 404, "User Not Found");
     }
+
+    return messageHandler(res, 200, "User Found", user);
   } catch (error) {
     return messageHandler(
       res,
@@ -321,6 +316,24 @@ const uploadUserProfile = async (req, res) => {
   }
 };
 
+const logoutHandler = async (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
+    return messageHandler(res, 200, "Logged out successfully");
+  } catch (error) {
+    return messageHandler(
+      res,
+      500,
+      `Logout Server Error: ${error.message}`,
+      error
+    );
+  }
+};
+
 module.exports = {
   registerHandler,
   loginHandler,
@@ -330,4 +343,5 @@ module.exports = {
   deleteUser,
   uploadUserProfile,
   getAllUser,
+  logoutHandler,
 };
