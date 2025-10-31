@@ -57,7 +57,7 @@ const deleteLookup = (Model) => async (req, res) => {
     if (!item) {
       return messageHandler(res, 404, "Item not found");
     }
-    await item.remove();
+    await Model.findByIdAndDelete(id);
     return messageHandler(res, 200, "Deleted successfully");
   } catch (error) {
     return messageHandler(res, 500, `Server Error: ${error.message}`);

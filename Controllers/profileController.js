@@ -1,4 +1,3 @@
-const { use } = require("react");
 const { Profile } = require("../Models/profileModel");
 const { User } = require("../Models/userModel");
 const { messageHandler } = require("../utils/messageHandler");
@@ -19,10 +18,10 @@ const createProfile = async (req, res) => {
       return messageHandler(res, 404, "User not found");
     }
 
-    const existingProfile = await Profile.findOne({ userID });
-    if (existingProfile) {
-      return messageHandler(res, 400, "Profile already exists for this user");
-    }
+    // const existingProfile = await Profile.findOne({ userID });
+    // if (existingProfile) {
+    //   return messageHandler(res, 400, "Profile already exists for this user");
+    // }
 
     // const { firstName, lastName, DOB, gender, bio, heightFeet, isVerified } =
     //   req.body;
@@ -34,20 +33,20 @@ const createProfile = async (req, res) => {
       bio,
       heightFeet,
       isVerified,
-      maritalStatusId, // <-- YEH ADD KAREIN
-      religionId, // <-- YEH ADD KAREIN
-      communityId, // <-- YEH ADD KAREIN
-      motherTongeId, // <-- YEH ADD KAREIN
-      countryId, // <-- YEH ADD KAREIN
-      cityId, // <-- YEH ADD KAREIN
-      educationId, // <-- YEH ADD KAREIN
-      professionId, // <-- YEH ADD KAREIN
+      maritalStatusId, 
+      religionId,
+      communityId, 
+      motherTongeId, 
+      countryId, 
+      cityId, 
+      educationId, 
+      professionId, 
     } = req.body;
     if (!firstName || !lastName || !DOB || !gender || !bio || !heightFeet) {
       return messageHandler(res, 400, "All fields are required");
     }
 
-    const newProfile = new Profile({
+    const newProfile = await Profile.create({
       userID,
       firstName,
       lastName,
@@ -64,16 +63,13 @@ const createProfile = async (req, res) => {
       cityId, 
       educationId, 
       professionId, 
-      
     });
 
-    await newProfile.save();
+    // Add the new profile to user's profiles array
+    user.profiles.push(newProfile._id);
+    await user.save();
 
-    if (user.profiles) {
-      user.profiles.push(newProfile._id);
-      await user.save();
-    }
-
+    
     return messageHandler(res, 200, "Profile created successfully", newProfile);
   } catch (error) {
     return messageHandler(
@@ -93,6 +89,7 @@ const getAllProfile = async (req, res) => {
       .populate("communityId", "name")
       .populate("motherTongeId", "name")
       .populate("countryId", "name")
+      .populate("cityId", "name")
       .populate("educationId", "name")
       .populate("professionId", "name");
 
@@ -123,6 +120,7 @@ const getProfileById = async (req, res) => {
       .populate("communityId", "name")
       .populate("motherTongeId", "name")
       .populate("countryId", "name")
+      .populate("cityId", "name")
       .populate("educationId", "name")
       .populate("professionId", "name");
 
@@ -152,8 +150,7 @@ const editProfile = async (req, res) => {
     if (!profile) {
       return messageHandler(res, 404, "Profile Not Found");
     }
-    console.log(profile.userID.toString());
-    console.log(userID);
+    
     if (profile.userID.toString() !== userID) {
       return messageHandler(
         res,
@@ -162,25 +159,45 @@ const editProfile = async (req, res) => {
       );
     }
 
-    const { firstName, lastName, DOB, gender, bio, heightFeet, isVerified } =
-      req.body;
+    const {
+      firstName,
+      lastName,
+      DOB,
+      gender,
+      bio,
+      heightFeet,
+      isVerified,
+      maritalStatusId,
+      religionId,
+      communityId,
+      motherTongeId,
+      countryId,
+      cityId,
+      educationId,
+      professionId,
+    } = req.body;
 
-    if (!firstName || !lastName || !DOB || !gender || !bio || !heightFeet) {
-      return messageHandler(res, 404, "All Details are required");
-    }
-
-    profile.firstName = firstName;
-    profile.lastName = lastName;
-    profile.DOB = DOB;
-    profile.gender = gender;
-    profile.bio = bio;
-    profile.heightFeet = heightFeet;
-    profile.isVerified = isVerified;
+    // Update fields if provided
+    if (firstName) profile.firstName = firstName;
+    if (lastName) profile.lastName = lastName;
+    if (DOB) profile.DOB = DOB;
+    if (gender) profile.gender = gender;
+    if (bio) profile.bio = bio;
+    if (heightFeet) profile.heightFeet = heightFeet;
+    if (isVerified !== undefined) profile.isVerified = isVerified;
+    if (maritalStatusId) profile.maritalStatusId = maritalStatusId;
+    if (religionId) profile.religionId = religionId;
+    if (communityId) profile.communityId = communityId;
+    if (motherTongeId) profile.motherTongeId = motherTongeId;
+    if (countryId) profile.countryId = countryId;
+    if (cityId) profile.cityId = cityId;
+    if (educationId) profile.educationId = educationId;
+    if (professionId) profile.professionId = professionId;
 
     const updateProfile = await profile.save();
 
     if (updateProfile) {
-      return messageHandler(res, 200, "Profile Update Succesfully");
+      return messageHandler(res, 200, "Profile Updated Successfully", updateProfile);
     }
   } catch (error) {
     return messageHandler(
